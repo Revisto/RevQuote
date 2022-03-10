@@ -1,0 +1,226 @@
+#!/usr/bin/env perl
+
+# Dilbert themed system info fetch tool
+# https://github.com/anhsirk0/fetch-master-6000
+
+use strict;
+use Term::ANSIColor;
+use Getopt::Long;
+use Text::Wrap;
+use experimental 'smartmatch';
+use POSIX;
+use warnings;
+use Data::Dumper;
+use JSON;
+
+my $length = 13;
+my $gap = 3;
+my $margin = 2;
+my $color = 'yellow';
+
+my @talker;
+my $wally;
+my $dogbert;
+my $alice;
+my $phb;
+my $asok;
+my $help;
+my $random;
+
+my @colors = (
+    'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white',
+    'bright_red', 'bright_green', 'bright_yellow',
+    'bright_blue', 'bright_magenta', 'bright_cyan', 'bright_white'
+    );
+
+my @wm = (
+    'fluxbox', 'openbox', 'blackbox', 'xfwm4', 'metacity', 'kwin', 'twin', 'icewm',
+    'pekwm', 'flwm', 'flwm_topside', 'fvwm', 'dwm', 'awesome', 'wmaker', 'stumpwm',
+    'musca', 'xmonad', 'i3', 'ratpoison', 'scrotwm', 'spectrwm', 'wmfs', 'wmii',
+    'beryl', 'subtle', 'e16', 'enlightenment', 'sawfish', 'emerald', 'monsterwm',
+    'dminiwm', 'compiz', 'Finder','herbstluftwm', 'howm', 'notion', 'bspwm', '2bwm',
+    'echinus', 'swm', 'budgie-wm', 'dtwm', '9wm', 'chromeos-wm', 'deepin-wm', 'sway',
+    'mwm', 'instawm', 'qtile', 'leftwm', 'none+leftwm'
+);
+
+sub packages {
+    # for debian based
+    my $pacs = `dpkg-query -l 2>/dev/null | grep "^ii"`;
+    # for arch based
+    unless ($pacs) { $pacs = `pacman -Q 2>/dev/null` }
+    # for fedora
+    unless ($pacs) { $pacs = `yum list installed 2>/dev/null` }
+    # for BSD
+    unless ($pacs) { $pacs = `pkg info 2>/dev/null` }
+    # for gentoo based
+    unless ($pacs) { $pacs = `ls -d /var/db/pkg/*/* 2>/dev/null` }
+    # for venon linux
+    unless ($pacs) { $pacs = `ls -d /var/lib/scratchpkg/db/* 2>/dev/null` }
+    # for solus
+    unless ($pacs) { $pacs = `ls /var/lib/eopkg/package/ 2>/dev/null` }
+    # for void linux
+    unless ($pacs) { $pacs = `xbps-query -l 2>/dev/null` }
+    # for OpenSUSE
+    unless ($pacs) { $pacs = `rpm -qa 2>/dev/null` }
+    # for nixos
+    unless ($pacs) { $pacs = `nix-store -qR /run/current-system/sw/ 2>/dev/null && nix-store -qR ~/.nix-profile/ 2>/dev/null` }
+
+    my $count = $pacs =~ tr/\n//;
+    unless ($count) { $count = "Unknown" }
+    return $count;
+}
+
+sub main {
+    my @info;
+    $color = @colors[int(rand scalar @colors)];
+
+    my $address = glob('~/.local/quotes.json');
+    my $json = decode_json(do { open(my $fh, "<:encoding(UTF-8)", $address) or die "Could not open $address: $!"; local $/; <$fh> });
+    my $random_quote = $json->[rand @$json];
+
+
+    my $total_length = $length + $gap + 7 - $margin; # total length of the text box
+    my $total_chars =  length($random_quote) + 10 * $margin; # including margin on each line
+
+    if ($total_chars / $total_length > 8) {
+        $length = $length + ceil($total_chars / $total_length)
+    }
+    
+    $Text::Wrap::columns = $length + $gap + 7 - $margin;
+    my @new_info;
+    @info = split "\n", wrap("" , "", $random_quote);
+    
+    my $number_of_lines = scalar @info;
+    for my $i (0 .. ($number_of_lines - 1)) {
+        $new_info[$i] = " " x $margin . $info[$i] . " " x ($length + $gap + 7 - length $info[$i]);
+    }
+    # if say text is less than 6 lines we can add two empty lines (at start and end)
+    if ($number_of_lines <= 6) {
+        unshift(@new_info, " " x ($length + $gap + 7 + $margin));
+        push(@new_info, " " x ($length + $gap + 7 + $margin));
+    }
+    @info = @new_info;
+
+    my @arr = map { 0 } (1..6);
+    $arr[int rand(6)] = 1;
+    ($wally, $dogbert, $alice, $phb, $asok) = splice @arr, 0, 4;
+
+
+    # my $i = 0;
+    my @info_lines = (); # info about os, wm etc etc
+
+    for my $i (0 .. scalar @info - 1) {
+        $info_lines[$i] = colored(q{│}, $color) . $info[$i] . colored('│', $color),
+    }
+
+    unshift(@info_lines, colored(q{╭} . '─' x ($length + $margin + $gap + 7) . '╮', $color));
+    push(@info_lines, colored(q{╰} . '─' x ($length + $margin + $gap + 7) . '╯', $color));
+    my $i = 0;
+    my $text = "\n";
+
+    if ($wally) {
+        @talker = (
+            colored(q{                  }, $color),
+            colored(q{     .-'''-.      }, $color),
+            colored(q{    |       |     }, $color),
+            colored(q{   ⪜|---_---|⪛   ╭}, $color),
+            colored(q{   Ͼ|__(_)__|Ͽ   │}, $color),
+            colored(q{    |   _   |    │}, $color),
+            colored(q{    |       |    ╯}, $color),
+            colored(q{   ˏ====○====ˎ    }, $color),
+            colored(q{       / \        }, $color),
+            colored(q{                  }, $color),
+        );
+        
+
+    } elsif ($dogbert) {
+        @talker = (
+            colored(q{                 }, $color),
+            colored(q{                 }, $color),
+            colored(q{    .-----.      }, $color),
+            colored(q{  .`       `.   ╭}, $color),
+            colored(q{ / /-() ()-\ \  │}, $color),
+            colored(q{ \_|   ○   |_/  │}, $color),
+            colored(q{  '.       .'   ╯}, $color),
+            colored(q{    `-._.-'      }, $color),
+            colored(q{                 }, $color),
+            colored(q{                 }, $color),
+        );
+        
+
+    } elsif ($alice) {
+        @talker = (
+            colored(q{           ..-..             }, $color),
+            colored(q{         (~     ~)           }, $color),
+            colored(q{       (           )         }, $color),
+            colored(q{     (    ~~~~~~~    )      ╭}, $color),
+            colored(q{   (     |  . .  |     )    │}, $color),
+            colored(q{  (      |  (_)  |      )   │}, $color),
+            colored(q{ (       |       |       )  ╯}, $color),
+            colored(q{   (.,.,.|  ===  |.,.,.)     }, $color),
+            colored(q{          '.___.'            }, $color),
+            colored(q{           /   \             }, $color),
+        );
+        
+
+    } elsif ($phb) {
+        @talker = (
+            colored(q{   @         @     }, $color),
+            colored(q{  @@  ..-..  @@    }, $color),
+            colored(q{  @@@' _ _ '@@@    }, $color),
+            colored(q{   @(  . .  )@    ╭}, $color),
+            colored(q{    |  (_)  |     │}, $color),
+            colored(q{    |   _   |     │}, $color),
+            colored(q{    |_     _|     ╯}, $color),
+            colored(q{   /|_'---'_|\     }, $color),
+            colored(q{  / | '\_/' | \    }, $color),
+            colored(q{ /  |  | |  |  \   }, $color),
+        );
+        
+        
+    } elsif ($asok) {
+        @talker = (
+            colored(q{                 }, $color),
+            colored(q{    @@@@@@@@@    }, $color),
+            colored(q{    |       |    }, $color),
+            colored(q{    | _   _ |   ╭}, $color),
+            colored(q{   Ͼ| ○   ○ |Ͽ  │}, $color),
+            colored(q{    |   u   |   │}, $color),
+            colored(q{    |  ---  |   ╯}, $color),
+            colored(q{   / `-._.-´ \   }, $color),
+            colored(q{        |        }, $color),
+            colored(q{                 }, $color),
+        );
+        
+
+    } else {
+        @talker = (
+            colored(q{               }, $color),
+            colored(q{    დოოოოოდ    }, $color),
+            colored(q{    |     |    }, $color),
+            colored(q{    |     |   ╭}, $color),
+            colored(q{    |-Ο Ο-|   │}, $color),
+            colored(q{   Ͼ   ∪   Ͽ  │}, $color),
+            colored(q{    |     |   ╯}, $color),
+            colored(q{   ˏ`-.ŏ.-´ˎ   }, $color),
+            colored(q{       @       }, $color),
+            colored(q{        @      }, $color),
+        );
+        
+        
+    }
+    
+    for my $i (0 .. scalar @talker - 1) {
+        $text .=  $talker[$i];
+        if (scalar @info_lines > $i) {
+            $text .= $info_lines[$i]
+        }
+        $text .= "\n";
+    }
+
+    $text .= "\n";
+    print $text;
+}
+
+
+main();
