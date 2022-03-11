@@ -57,6 +57,6 @@ Please ⭐️ this repository if this project helped you!
 
 ## 📝 License
 
-GNUv2
+GPL-3.0 License
 
 **Free Software, Hell Yeah!**
