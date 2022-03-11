@@ -24,6 +24,8 @@ my $dogbert;
 my $alice;
 my $phb;
 my $asok;
+my $cowsay;
+my $penguin;
 my $help;
 my $random;
 
@@ -101,9 +103,12 @@ sub main {
     }
     @info = @new_info;
 
-    my @arr = map { 0 } (1..6);
-    $arr[int rand(6)] = 1;
-    ($wally, $dogbert, $alice, $phb, $asok) = splice @arr, 0, 4;
+    my @arr = map { 0 } (1..8);
+    $arr[int rand(8)] = 1;
+    ($wally, $dogbert, $alice, $phb, $asok, $cowsay, $penguin) = splice @arr, 0, 8;    
+
+    # remove randomly except one of them
+
 
 
     # my $i = 0;
@@ -192,6 +197,33 @@ sub main {
             colored(q{                 }, $color),
         );
         
+    } elsif ($cowsay) {
+        @talker = (
+            colored(q{                   }, $color),
+            colored(q{                   }, $color),
+            colored(q{            ^__^  ╭}, $color),
+            colored(q{    _______/(oo)  │}, $color),
+            colored(q{/\/(       /(__)  │}, $color),
+            colored(q{   | w----||     -╯}, $color),
+            colored(q{   ||     ||       }, $color),
+            colored(q{   ||     ||       }, $color),
+            colored(q{   --     --       }, $color),
+            colored(q{                   }, $color),
+        );
+  
+    } elsif ($penguin) {
+        @talker = (
+            colored(q{                 }, $color),
+            colored(q{                 }, $color),
+            colored(q{       .--.     ╭}, $color),
+            colored(q{      |o_o |    │}, $color),
+            colored(q{      |:_/ | ---╯}, $color),
+            colored(q{     //   \ \    }, $color),
+            colored(q{    (|     | )   }, $color),
+            colored(q{   /'\_   _/`\   }, $color),
+            colored(q{   \___)=(___/   }, $color),
+            colored(q{                 }, $color),
+        );
 
     } else {
         @talker = (
@@ -206,9 +238,7 @@ sub main {
             colored(q{       @       }, $color),
             colored(q{        @      }, $color),
         );
-        
-        
-    }
+    }               
     
     for my $i (0 .. scalar @talker - 1) {
         $text .=  $talker[$i];
