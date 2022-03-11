@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-# Dilbert themed system info fetch tool
+# Dilbert themed TUI
 # https://github.com/anhsirk0/fetch-master-6000
 
 use strict;
