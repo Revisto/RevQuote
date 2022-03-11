@@ -3,6 +3,8 @@
 
 RevQuote Is A Fast Sexy Dilbert Themed Text-Based App Which Quotes Philosophical Quotes In Your Terminal!
 
+BTW: It's mainly based on https://github.com/anhsirk0/fetch-master-6000
+
 ![](https://github.com/Revisto/RevQuote/blob/master/src/screenshot.png)
 
 ## ✨ What It Does
